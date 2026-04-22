@@ -807,3 +807,17 @@ export function getFleetSummary(): FleetSummary {
     healthyPct: Math.round((online / total) * 100),
   };
 }
+
+export function getNeedsAttention(): Agent[] {
+  return agents.filter((a) => {
+    if (a.status === "offline" || a.status === "stuck" || a.status === "degraded") return true;
+    if (a.versionDrift) return true;
+    if (a.errors24h > 5) return true;
+    if (a.secrets.expiringSoon > 0 || a.secrets.expired > 0) return true;
+    if (a.security.criticalFindings > 0) return true;
+    if (!a.backupHealthy) return true;
+    if (a.host.disk > 80) return true;
+    return false;
+  });
+}
+
