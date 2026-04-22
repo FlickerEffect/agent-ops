@@ -18,12 +18,12 @@ export function FleetSummaryCards() {
       <SummaryCard
         label="Degraded"
         value={s.degraded}
-        color={s.degraded > 0 ? "text-yellow" : "text-gray-500"}
+        color={s.degraded > 0 ? "text-yellow" : "text-gray-300"}
       />
       <SummaryCard
         label="Offline"
         value={s.offline + s.stuck}
-        color={s.offline + s.stuck > 0 ? "text-red" : "text-gray-500"}
+        color={s.offline + s.stuck > 0 ? "text-red" : "text-gray-300"}
       />
       <SummaryCard
         label="Cost Today"
@@ -48,9 +48,9 @@ function SummaryCard({
 }) {
   return (
     <div className="glass rounded-xl p-4">
-      <div className="text-xs text-gray-500 mb-1">{label}</div>
+      <div className="text-xs text-gray-300 mb-1">{label}</div>
       <div className={`text-2xl font-bold ${color}`}>{value}</div>
-      {sub && <div className="text-[10px] text-gray-600 mt-1">{sub}</div>}
+      {sub && <div className="text-[10px] text-gray-200 mt-1">{sub}</div>}
     </div>
   );
 }

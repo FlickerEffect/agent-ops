@@ -11,9 +11,9 @@ export default function Home() {
         <header className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-white">Agent Operations</h1>
-            <p className="text-sm text-gray-500 mt-1">Flicker Effect fleet overview</p>
+            <p className="text-sm text-gray-300 mt-1">Flicker Effect fleet overview</p>
           </div>
-          <div className="text-xs text-gray-600 font-mono">
+          <div className="text-xs text-gray-200 font-mono">
             Last refresh: just now
           </div>
         </header>

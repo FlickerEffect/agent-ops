@@ -17,11 +17,11 @@ export function AgentDetail({ agent: a, onClose }: { agent: Agent; onClose: () =
               <StatusDot status={a.status} />
               <h2 className="text-lg font-bold text-white">{a.name}</h2>
             </div>
-            <div className="text-xs text-gray-500 mt-1">
+            <div className="text-xs text-gray-300 mt-1">
               {a.id} · {a.environment} · {a.tags.join(", ")}
             </div>
           </div>
-          <button onClick={onClose} className="text-gray-500 hover:text-white text-xl">✕</button>
+          <button onClick={onClose} className="text-gray-300 hover:text-white text-xl">✕</button>
         </div>
 
         <div className="p-5 space-y-6">
@@ -143,7 +143,7 @@ export function AgentDetail({ agent: a, onClose }: { agent: Agent; onClose: () =
                   <TimelineIcon type={e.type} />
                   <div>
                     <div className="text-xs text-gray-300">{e.message}</div>
-                    <div className="text-[10px] text-gray-600 font-mono">{formatTime(e.time)}</div>
+                    <div className="text-[10px] text-gray-200 font-mono">{formatTime(e.time)}</div>
                   </div>
                 </div>
               ))}
@@ -158,7 +158,7 @@ export function AgentDetail({ agent: a, onClose }: { agent: Agent; onClose: () =
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h3 className="text-xs text-gray-500 uppercase tracking-wider mb-3 font-semibold">{title}</h3>
+      <h3 className="text-xs text-gray-300 uppercase tracking-wider mb-3 font-semibold">{title}</h3>
       <div className="glass rounded-xl p-4 space-y-2">{children}</div>
     </div>
   );
@@ -167,7 +167,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function KV({ label, value, warn, mono }: { label: string; value: string; warn?: boolean; mono?: boolean }) {
   return (
     <div className="flex items-center justify-between text-sm">
-      <span className="text-gray-500 text-xs">{label}</span>
+      <span className="text-gray-300 text-xs">{label}</span>
       <span className={`text-xs ${warn ? "text-yellow" : "text-gray-300"} ${mono ? "font-mono" : ""}`}>
         {value}
       </span>
@@ -179,11 +179,11 @@ function ResourceBar({ label, value }: { label: string; value: number }) {
   const color = value > 80 ? "bg-red" : value > 60 ? "bg-yellow" : "bg-green";
   return (
     <div className="flex items-center gap-3">
-      <span className="text-xs text-gray-500 w-10">{label}</span>
+      <span className="text-xs text-gray-300 w-10">{label}</span>
       <div className="flex-1 h-2 bg-surface-2 rounded-full overflow-hidden">
         <div className={`h-full ${color} rounded-full transition-all`} style={{ width: `${value}%` }} />
       </div>
-      <span className="text-xs text-gray-400 font-mono w-10 text-right">{value}%</span>
+      <span className="text-xs text-gray-200 font-mono w-10 text-right">{value}%</span>
     </div>
   );
 }

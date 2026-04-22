@@ -10,7 +10,7 @@ export function Sidebar() {
           </div>
           <div>
             <div className="text-sm font-semibold text-white">Flicker Effect</div>
-            <div className="text-[10px] text-gray-500">Agent Ops</div>
+            <div className="text-[10px] text-gray-300">Agent Ops</div>
           </div>
         </div>
       </div>
@@ -25,8 +25,8 @@ export function Sidebar() {
       </nav>
 
       <div className="p-4 border-t border-white/5">
-        <div className="text-[10px] text-gray-600">teams.flickereffect.net</div>
-        <div className="text-[10px] text-gray-700 mt-1">v0.1.0</div>
+        <div className="text-[10px] text-gray-200">teams.flickereffect.net</div>
+        <div className="text-[10px] text-gray-300 mt-1">v0.1.0</div>
       </div>
     </aside>
   );
@@ -37,7 +37,7 @@ function SidebarLink({ href, icon, label, active }: { href: string; icon: string
     <Link
       href={href}
       className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors ${
-        active ? "bg-accent/10 text-white" : "text-gray-400 hover:text-white hover:bg-white/5"
+        active ? "bg-accent/10 text-white" : "text-gray-200 hover:text-white hover:bg-white/5"
       }`}
     >
       <span className="text-base">{icon}</span>

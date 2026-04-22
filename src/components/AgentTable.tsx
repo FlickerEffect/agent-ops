@@ -21,7 +21,7 @@ export function AgentTable() {
       <div className="glass rounded-xl overflow-hidden">
         {/* Filters */}
         <div className="flex items-center gap-4 p-4 border-b border-white/5">
-          <span className="text-xs text-gray-500">Filter:</span>
+          <span className="text-xs text-gray-300">Filter:</span>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as AgentStatus | "all")}
@@ -43,11 +43,11 @@ export function AgentTable() {
             <option value="staging">Staging</option>
             <option value="dev">Development</option>
           </select>
-          <div className="ml-auto text-xs text-gray-600">{filtered.length} agents</div>
+          <div className="ml-auto text-xs text-gray-200">{filtered.length} agents</div>
         </div>
 
         {/* Header */}
-        <div className="grid grid-cols-12 gap-2 px-4 py-2 text-[10px] text-gray-500 uppercase tracking-wider border-b border-white/5">
+        <div className="grid grid-cols-12 gap-2 px-4 py-2 text-[10px] text-gray-300 uppercase tracking-wider border-b border-white/5">
           <div className="col-span-1">Status</div>
           <div className="col-span-2">Agent</div>
           <div className="col-span-2">Current Task</div>
@@ -72,24 +72,24 @@ export function AgentTable() {
             </div>
             <div className="col-span-2">
               <div className="text-sm text-white font-medium truncate">{a.name}</div>
-              <div className="text-[10px] text-gray-600">
+              <div className="text-[10px] text-gray-200">
                 {a.environment} · {a.tags[0]}
               </div>
             </div>
-            <div className="col-span-2 text-xs text-gray-400 truncate self-center">
+            <div className="col-span-2 text-xs text-gray-200 truncate self-center">
               {a.currentTask || "—"}
             </div>
             <div className="col-span-1 text-center self-center">
-              <span className={`text-xs font-mono ${a.queueDepth > 3 ? "text-yellow" : "text-gray-400"}`}>
+              <span className={`text-xs font-mono ${a.queueDepth > 3 ? "text-yellow" : "text-gray-200"}`}>
                 {a.queueDepth}
               </span>
             </div>
             <div className="col-span-1 text-center self-center">
-              <span className={`text-xs font-mono ${a.errors24h > 5 ? "text-red" : a.errors24h > 0 ? "text-yellow" : "text-gray-500"}`}>
+              <span className={`text-xs font-mono ${a.errors24h > 5 ? "text-red" : a.errors24h > 0 ? "text-yellow" : "text-gray-300"}`}>
                 {a.errors24h}
               </span>
             </div>
-            <div className="col-span-1 text-center self-center text-xs font-mono text-gray-400">
+            <div className="col-span-1 text-center self-center text-xs font-mono text-gray-200">
               {a.apiLatency > 0 ? `${a.apiLatency}ms` : "—"}
             </div>
             <div className="col-span-1 text-center self-center text-xs font-mono text-cyan">
@@ -105,7 +105,7 @@ export function AgentTable() {
             <div className="col-span-1 text-center self-center">
               <HostMini cpu={a.host.cpu} ram={a.host.ram} />
             </div>
-            <div className="col-span-1 text-right self-center text-[10px] text-gray-500 font-mono">
+            <div className="col-span-1 text-right self-center text-[10px] text-gray-300 font-mono">
               {timeAgo(a.lastSeen)}
             </div>
           </div>

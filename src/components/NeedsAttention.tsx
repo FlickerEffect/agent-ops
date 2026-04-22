@@ -17,10 +17,10 @@ export function NeedsAttention() {
               <StatusDot status={a.status} />
               <div>
                 <div className="text-sm text-white font-medium">{a.name}</div>
-                <div className="text-xs text-gray-500">{getReasons(a).join(" · ")}</div>
+                <div className="text-xs text-gray-300">{getReasons(a).join(" · ")}</div>
               </div>
             </div>
-            <div className="text-xs text-gray-600 font-mono">
+            <div className="text-xs text-gray-200 font-mono">
               {a.environment}
             </div>
           </div>
