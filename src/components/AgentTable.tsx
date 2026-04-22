@@ -56,7 +56,7 @@ export function AgentTable() {
           <div className="col-span-1 text-center">Latency</div>
           <div className="col-span-1 text-center">Cost/Day</div>
           <div className="col-span-1 text-center">Version</div>
-          <div className="col-span-1 text-center">Host</div>
+          <div className="col-span-1 text-center">Host / IP</div>
           <div className="col-span-1 text-right">Last Seen</div>
         </div>
 
@@ -103,7 +103,8 @@ export function AgentTable() {
               )}
             </div>
             <div className="col-span-1 text-center self-center">
-              <HostMini cpu={a.host.cpu} ram={a.host.ram} />
+              <div className="text-[10px] text-gray-200 truncate">{a.host.name}</div>
+              <div className="text-[10px] text-gray-400 font-mono">{a.host.ip}</div>
             </div>
             <div className="col-span-1 text-right self-center text-[10px] text-gray-300 font-mono">
               {timeAgo(a.lastSeen)}

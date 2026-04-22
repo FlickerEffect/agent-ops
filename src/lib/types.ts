@@ -34,6 +34,8 @@ export interface Agent {
     disk: number; // 0-100
     network: "healthy" | "degraded" | "down";
     gpu?: { usage: number; temp: number };
+    ip: string;
+    location: string;
   };
 
   // Errors & Latency
