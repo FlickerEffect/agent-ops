@@ -11,20 +11,27 @@ export function NeedsAttention() {
         Needs Attention ({items.length})
       </h2>
       <div className="space-y-3">
-        {items.map((a) => (
-          <div key={a.id} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
-            <div className="flex items-center gap-3">
-              <StatusDot status={a.status} />
-              <div>
+        {items.map((a) => {
+          const reasons = getReasons(a);
+          return (
+            <div key={a.id} className="flex flex-col sm:flex-row sm:items-center gap-2 py-3 border-b border-white/5 last:border-0">
+              <div className="flex items-center gap-3 sm:w-48 shrink-0">
+                <StatusDot status={a.status} />
                 <div className="text-sm text-white font-medium">{a.name}</div>
-                <div className="text-xs text-gray-300">{getReasons(a).join(" · ")}</div>
+              </div>
+              <div className="flex flex-wrap gap-1.5 flex-1">
+                {reasons.map((r, i) => (
+                  <span key={i} className={`text-xs px-2.5 py-1 rounded-lg font-medium ${getReasonStyle(r)}`}>
+                    {r}
+                  </span>
+                ))}
+              </div>
+              <div className="text-xs text-gray-300 font-mono sm:w-16 text-right shrink-0">
+                {a.environment}
               </div>
             </div>
-            <div className="text-xs text-gray-200 font-mono">
-              {a.environment}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -35,13 +42,21 @@ function getReasons(a: ReturnType<typeof getNeedsAttention>[0]): string[] {
   if (a.status === "offline") reasons.push("Offline");
   if (a.status === "stuck") reasons.push("Stuck");
   if (a.status === "degraded") reasons.push("Degraded");
-  if (a.versionDrift) reasons.push("Version drift");
-  if (a.errors24h > 5) reasons.push(`${a.errors24h} errors/24h`);
-  if (a.secrets.expiringSoon > 0) reasons.push(`${a.secrets.expiringSoon} key(s) expiring`);
+  if (a.host.disk > 80) reasons.push(`Disk ${a.host.disk}%`);
+  if (a.errors24h > 10) reasons.push(`${a.errors24h} errors/24h`);
   if (a.secrets.expired > 0) reasons.push(`${a.secrets.expired} key(s) expired`);
-  if (a.security.criticalFindings > 0) reasons.push(`${a.security.criticalFindings} critical vulns`);
-  if (!a.backupHealthy) reasons.push("Backup unhealthy");
+  if (a.security.criticalFindings > 0) reasons.push(`${a.security.criticalFindings} critical vuln(s)`);
   return reasons;
+}
+
+function getReasonStyle(reason: string): string {
+  if (reason.includes("Offline") || reason.includes("expired") || reason.includes("critical")) {
+    return "bg-red/15 text-red";
+  }
+  if (reason.includes("Stuck") || reason.includes("Disk") || reason.includes("errors")) {
+    return "bg-orange/15 text-orange";
+  }
+  return "bg-yellow/15 text-yellow";
 }
 
 function StatusDot({ status }: { status: string }) {

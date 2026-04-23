@@ -42,7 +42,7 @@ export default function TimelinePage() {
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <main className="flex-1 ml-56 p-6 space-y-6">
+      <main className="flex-1 lg:ml-56 p-4 sm:p-6 pt-16 lg:pt-6 space-y-6">
         <header>
           <h1 className="text-2xl font-bold text-white">Timeline</h1>
           <p className="text-sm text-gray-300 mt-1">All events across the fleet</p>

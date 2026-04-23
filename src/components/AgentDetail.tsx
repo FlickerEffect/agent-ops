@@ -4,153 +4,289 @@ import type { Agent } from "@/lib/types";
 
 export function AgentDetail({ agent: a, onClose }: { agent: Agent; onClose: () => void }) {
   return (
-    <div className="fixed inset-0 z-50 flex">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-
-      {/* Panel */}
-      <div className="relative ml-auto w-full max-w-2xl bg-surface border-l border-white/5 overflow-y-auto">
-        {/* Header */}
-        <div className="sticky top-0 bg-surface z-10 p-5 border-b border-white/5 flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <StatusDot status={a.status} />
-              <h2 className="text-lg font-bold text-white">{a.name}</h2>
-            </div>
-            <div className="text-xs text-gray-300 mt-1">
-              {a.id} · {a.environment} · {a.tags.join(", ")}
+    <div className="fixed inset-0 z-50 bg-[#0a0e1a] overflow-y-auto">
+      {/* Header */}
+      <div className="sticky top-0 bg-[#0a0e1a]/95 backdrop-blur z-10 border-b border-white/5">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <StatusDot status={a.status} size="lg" />
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold text-white">{a.name}</h1>
+              <div className="text-sm text-gray-400">{a.role} · {a.owner} · {a.environment}</div>
             </div>
           </div>
-          <button onClick={onClose} className="text-gray-300 hover:text-white text-xl">✕</button>
+          <button onClick={onClose} className="text-gray-400 hover:text-white text-2xl p-2">✕</button>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+        {/* Quick stats row */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <QuickStat label="Cost Today" value={`$${a.cost.today.toFixed(2)}`} sub={a.cost.model.split("/").pop() || ""} color="cyan" />
+          <QuickStat label="Errors (24h)" value={String(a.errors24h)} sub={`${a.errors1h} in last hour`} color={a.errors24h > 5 ? "red" : "green"} />
+          <QuickStat label="Uptime" value={a.uptime} sub={`Last seen ${formatTime(a.lastSeen)}`} color="green" />
+          <QuickStat label="Tokens Today" value={formatNumber(a.cost.tokensToday)} sub={`$${a.cost.month.toFixed(0)}/mo`} color="indigo" />
         </div>
 
-        <div className="p-5 space-y-6">
-          {/* Status & Task */}
-          <Section title="Status">
-            <KV label="Current Task" value={a.currentTask || "Idle"} />
-            <KV label="Queue Depth" value={String(a.queueDepth)} />
-            <KV label="Uptime" value={a.uptime} />
-            <KV label="Last Heartbeat" value={formatTime(a.lastHeartbeat)} />
-            <KV label="Last Seen" value={formatTime(a.lastSeen)} />
-          </Section>
+        {/* Two column layout on desktop */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left column */}
+          <div className="space-y-6">
+            {/* Status & Task */}
+            <Section title="Status & Task">
+              <KV label="Current Task" value={a.currentTask || "Idle"} large />
+              <KV label="Queue Depth" value={String(a.queueDepth)} />
+              <KV label="Last Heartbeat" value={formatTime(a.lastHeartbeat)} />
+              {a.lastHumanInteraction && <KV label="Last Human Interaction" value={formatTime(a.lastHumanInteraction)} />}
+              {a.sessionCountToday !== undefined && <KV label="Sessions Today" value={String(a.sessionCountToday)} />}
+            </Section>
 
-          {/* Version */}
-          <Section title="Version">
-            <KV label="Agent" value={a.agentVersion} warn={a.versionDrift} />
-            <KV label="Latest" value={a.latestVersion} />
-            <KV label="System" value={a.systemVersion} />
-            <KV label="Tooling" value={a.toolingVersion} />
-            {a.versionDrift && (
-              <div className="mt-2 text-xs text-yellow bg-yellow/10 px-3 py-1.5 rounded-lg">
-                ⚠ Version drift detected — agent behind latest approved version
+            {/* Projects */}
+            {(a.sideProjects?.length || a.abandonedProjects?.length) ? (
+              <Section title="Projects">
+                {a.sideProjects?.length ? (
+                  <div className="mb-3">
+                    <div className="text-xs text-gray-400 mb-1.5">Active / Side Projects</div>
+                    {a.sideProjects.map((p, i) => (
+                      <div key={i} className="text-sm text-green py-0.5">• {p}</div>
+                    ))}
+                  </div>
+                ) : null}
+                {a.abandonedProjects?.length ? (
+                  <div>
+                    <div className="text-xs text-gray-400 mb-1.5">Abandoned / Stale</div>
+                    {a.abandonedProjects.map((p, i) => (
+                      <div key={i} className="text-sm text-yellow/70 py-0.5">⚠ {p}</div>
+                    ))}
+                  </div>
+                ) : null}
+              </Section>
+            ) : null}
+
+            {/* Host Resources */}
+            <Section title="Host">
+              <KV label="Hostname" value={a.host.name} />
+              <KV label="IP" value={a.host.ip} mono />
+              <KV label="Location" value={a.host.location} />
+              {a.host.workspaceSize && <KV label="Workspace" value={a.host.workspaceSize} />}
+              <div className="mt-3 space-y-2">
+                <ResourceBar label="CPU" value={a.host.cpu} />
+                <ResourceBar label="RAM" value={a.host.ram} />
+                <ResourceBar label="Disk" value={a.host.disk} />
               </div>
+              {a.host.network !== "healthy" && (
+                <div className="mt-2 text-sm text-yellow bg-yellow/10 px-3 py-2 rounded-lg">
+                  ⚠ Network: {a.host.network}
+                </div>
+              )}
+            </Section>
+
+            {/* Tailscale */}
+            {a.tailscale && (
+              <Section title="Tailscale">
+                <KV label="IP" value={a.tailscale.ip} mono />
+                <KV label="Hostname" value={a.tailscale.hostname} />
+                <KV label="Status" value={a.tailscale.status} warn={a.tailscale.status !== "online"} />
+              </Section>
             )}
-          </Section>
 
-          {/* Host Resources */}
-          <Section title="Host Resources">
-            <KV label="Host" value={a.host.name} />
-            <ResourceBar label="CPU" value={a.host.cpu} />
-            <ResourceBar label="RAM" value={a.host.ram} />
-            <ResourceBar label="Disk" value={a.host.disk} />
-            <KV label="Network" value={a.host.network} warn={a.host.network !== "healthy"} />
-            {a.host.gpu && (
-              <>
-                <ResourceBar label="GPU" value={a.host.gpu.usage} />
-                <KV label="GPU Temp" value={`${a.host.gpu.temp}°C`} warn={a.host.gpu.temp > 80} />
-              </>
+            {/* Communication */}
+            {a.channels.length > 0 && (
+              <Section title="Communication">
+                {a.channels.map((ch, i) => (
+                  <KV key={i} label={ch.type} value={ch.handle || "configured"} />
+                ))}
+              </Section>
             )}
-          </Section>
 
-          {/* Errors & Latency */}
-          <Section title="Performance">
-            <KV label="Errors (1h)" value={String(a.errors1h)} warn={a.errors1h > 0} />
-            <KV label="Errors (24h)" value={String(a.errors24h)} warn={a.errors24h > 3} />
-            <KV label="Task Start Delay" value={`${a.taskStartDelay}ms`} />
-            <KV label="Avg Completion" value={`${(a.completionTime / 1000).toFixed(1)}s`} />
-            <KV label="API Latency" value={`${a.apiLatency}ms`} />
-          </Section>
+            {/* Memory & Workspace */}
+            <Section title="Memory & Workspace">
+              <KV label="Memory Structure" value={a.memoryStructure} />
+              {a.workspaceFiles && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {Object.entries(a.workspaceFiles).map(([file, exists]) => (
+                    <span key={file} className={`text-xs px-2 py-0.5 rounded-full ${exists ? "bg-green/10 text-green" : "bg-gray-700 text-gray-500"}`}>
+                      {file.toUpperCase()}.md
+                    </span>
+                  ))}
+                </div>
+              )}
+            </Section>
 
-          {/* Cost */}
-          <Section title="Cost">
-            <KV label="Model" value={a.cost.model} mono />
-            <KV label="Today" value={`$${a.cost.today.toFixed(2)}`} />
-            <KV label="This Week" value={`$${a.cost.week.toFixed(2)}`} />
-            <KV label="This Month" value={`$${a.cost.month.toFixed(2)}`} />
-            <KV label="Tokens Today" value={a.cost.tokensToday.toLocaleString()} mono />
-          </Section>
+            {/* Version */}
+            <Section title="Version">
+              <KV label="Agent" value={a.agentVersion} warn={a.versionDrift} />
+              <KV label="Latest" value={a.latestVersion} />
+              <KV label="System" value={a.systemVersion} />
+              <KV label="Tooling" value={a.toolingVersion} />
+              {a.versionDrift && (
+                <div className="mt-2 text-sm text-yellow bg-yellow/10 px-3 py-2 rounded-lg">
+                  ⚠ Behind latest version
+                </div>
+              )}
+            </Section>
+          </div>
 
-          {/* Permissions */}
-          <Section title="Permissions">
-            <div className="flex flex-wrap gap-1.5">
-              {a.permissions.map((p) => (
-                <span key={p} className="text-[10px] px-2 py-0.5 bg-accent/10 text-accent rounded-full">
-                  {p}
-                </span>
-              ))}
-            </div>
-          </Section>
+          {/* Right column */}
+          <div className="space-y-6">
+            {/* SSH Access */}
+            {a.sshAccess && a.sshAccess.length > 0 && (
+              <Section title="SSH Access">
+                <div className="space-y-1">
+                  {a.sshAccess.map((s, i) => (
+                    <div key={i} className="flex items-center justify-between text-sm">
+                      <span className="text-gray-300">{s.host}</span>
+                      <span className="text-gray-400 font-mono text-xs">{s.user}@{s.ip}</span>
+                    </div>
+                  ))}
+                </div>
+              </Section>
+            )}
 
-          {/* Backup & Secrets */}
-          <Section title="Backup & Secrets">
-            <KV label="Last Backup" value={a.lastBackup ? formatTime(a.lastBackup) : "Never"} warn={!a.backupHealthy} />
-            <KV label="Last Restore Test" value={a.lastRestoreTest ? formatTime(a.lastRestoreTest) : "Never"} warn={!a.lastRestoreTest} />
-            <KV label="Backup Healthy" value={a.backupHealthy ? "Yes" : "No"} warn={!a.backupHealthy} />
-            <KV label="Secrets" value={`${a.secrets.total} total`} />
-            <KV label="Expiring Soon" value={String(a.secrets.expiringSoon)} warn={a.secrets.expiringSoon > 0} />
-            <KV label="Expired" value={String(a.secrets.expired)} warn={a.secrets.expired > 0} />
-            <KV label="Last Rotation" value={a.secrets.lastRotation ? formatTime(a.secrets.lastRotation) : "Never"} />
-          </Section>
+            {/* Service Access */}
+            {a.serviceAccess && a.serviceAccess.length > 0 && (
+              <Section title="API & Service Access">
+                <div className="space-y-1.5">
+                  {a.serviceAccess.map((s, i) => (
+                    <div key={i} className="flex items-center justify-between text-sm">
+                      <div>
+                        <span className="text-white">{s.service}</span>
+                        {s.scope && <span className="text-gray-400 text-xs ml-2">{s.scope}</span>}
+                      </div>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full ${
+                        s.method === "OAuth" ? "bg-green/10 text-green" :
+                        s.method === "PAT" ? "bg-indigo-500/10 text-indigo-400" :
+                        "bg-yellow/10 text-yellow"
+                      }`}>{s.method}</span>
+                    </div>
+                  ))}
+                </div>
+              </Section>
+            )}
 
-          {/* Auto-restart */}
-          <Section title="Self-Heal">
-            <KV label="Auto-Restart" value={a.autoRestart ? "Enabled" : "Disabled"} warn={!a.autoRestart} />
-            <KV label="Last Restart" value={a.lastRestartTime ? formatTime(a.lastRestartTime) : "Never"} />
-            <KV label="Reason" value={a.lastRestartReason || "—"} />
-          </Section>
+            {/* MCP Connections */}
+            {a.mcpConnections && a.mcpConnections.length > 0 && (
+              <Section title="MCP Connections">
+                {a.mcpConnections.map((m, i) => (
+                  <div key={i} className="flex items-center justify-between text-sm">
+                    <div>
+                      <span className="text-white">{m.name}</span>
+                      <span className="text-gray-500 text-xs ml-2">{m.type}</span>
+                    </div>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full ${
+                      m.status === "connected" ? "bg-green/10 text-green" :
+                      m.status === "failed" ? "bg-red/10 text-red" :
+                      "bg-gray-700 text-gray-500"
+                    }`}>{m.status}</span>
+                  </div>
+                ))}
+              </Section>
+            )}
 
-          {/* Security */}
-          <Section title="Security">
-            <KV label="Patch Level" value={a.security.patchLevel} />
-            <KV label="Last OS Update" value={a.security.lastOsUpdate} />
-            <KV label="Firewall" value={a.security.firewallStatus} warn={a.security.firewallStatus !== "active"} />
-            <KV label="Ports Exposed" value={a.security.portsExposed.length > 0 ? a.security.portsExposed.join(", ") : "None"} mono />
-            <KV label="SSH Password Login" value={a.security.sshPasswordDisabled ? "Disabled ✓" : "ENABLED ⚠"} warn={!a.security.sshPasswordDisabled} />
-            <KV label="SSH Key-Only" value={a.security.sshKeyOnly ? "Yes ✓" : "No ⚠"} warn={!a.security.sshKeyOnly} />
-            <KV label="fail2ban" value={a.security.fail2ban ? "Active ✓" : "Inactive ⚠"} warn={!a.security.fail2ban} />
-            <KV label="Disk Encryption" value={a.security.diskEncryption ? "Yes ✓" : "No ⚠"} warn={!a.security.diskEncryption} />
-            <KV label="MFA" value={a.security.mfaEnabled ? "Enabled ✓" : "Disabled"} />
-            <KV label="Audit Log" value={a.security.auditLogEnabled ? `Enabled (${a.security.auditRetentionDays}d retention)` : "Disabled ⚠"} warn={!a.security.auditLogEnabled} />
-            <KV label="Last Vuln Scan" value={a.security.lastVulnScan ? formatTime(a.security.lastVulnScan) : "Never"} warn={!a.security.lastVulnScan} />
-            <KV label="Critical Findings" value={String(a.security.criticalFindings)} warn={a.security.criticalFindings > 0} />
-            <KV label="Network Location" value={a.security.networkLocation} />
-          </Section>
+            {/* Peer Agents */}
+            {a.peerAgents && a.peerAgents.length > 0 && (
+              <Section title="Peer Agents">
+                <div className="flex flex-wrap gap-1.5">
+                  {a.peerAgents.map((p) => (
+                    <span key={p} className="text-xs px-2.5 py-1 bg-indigo-500/10 text-indigo-400 rounded-lg">{p}</span>
+                  ))}
+                </div>
+              </Section>
+            )}
 
-          {/* Governance */}
-          <Section title="Governance">
-            <KV label="Owner" value={a.owner} />
-            <KV label="SLA Tier" value={a.slaTier} />
-            <KV label="Maintenance Window" value={a.maintenanceWindow} />
-            <KV label="Approved Models" value={a.approvedModels.join(", ") || "None"} mono />
-            <KV label="Fallback Chain" value={a.fallbackChain.join(" → ") || "None"} mono />
-          </Section>
+            {/* Cron Jobs */}
+            {a.cronJobs && a.cronJobs.length > 0 && (
+              <Section title="Cron Jobs">
+                {a.cronJobs.map((c, i) => (
+                  <div key={i} className="flex items-center justify-between text-sm py-1">
+                    <div>
+                      <span className="text-gray-300">{c.task}</span>
+                    </div>
+                    <span className="text-xs text-gray-400 font-mono">{c.schedule}</span>
+                  </div>
+                ))}
+              </Section>
+            )}
 
-          {/* Timeline */}
+            {/* Cost */}
+            <Section title="Cost Breakdown">
+              <KV label="Model" value={a.cost.model} mono />
+              <KV label="Today" value={`$${a.cost.today.toFixed(2)}`} />
+              <KV label="This Week" value={`$${a.cost.week.toFixed(2)}`} />
+              <KV label="This Month" value={`$${a.cost.month.toFixed(2)}`} />
+              <KV label="Tokens Today" value={formatNumber(a.cost.tokensToday)} mono />
+            </Section>
+
+            {/* Permissions */}
+            <Section title="Permissions">
+              <div className="flex flex-wrap gap-1.5">
+                {a.permissions.map((p) => (
+                  <span key={p} className="text-xs px-2 py-0.5 bg-accent/10 text-accent rounded-full">{p}</span>
+                ))}
+              </div>
+            </Section>
+
+            {/* Security */}
+            <Section title="Security">
+              <KV label="Firewall" value={a.security.firewallStatus} warn={a.security.firewallStatus !== "active"} />
+              <KV label="Ports Exposed" value={a.security.portsExposed.join(", ") || "None"} mono />
+              <KV label="SSH Key-Only" value={a.security.sshKeyOnly ? "Yes ✓" : "No ⚠"} warn={!a.security.sshKeyOnly} />
+              <KV label="fail2ban" value={a.security.fail2ban ? "Active ✓" : "Inactive"} warn={!a.security.fail2ban} />
+              <KV label="Critical Findings" value={String(a.security.criticalFindings)} warn={a.security.criticalFindings > 0} />
+              <KV label="Patch Level" value={a.security.patchLevel} />
+            </Section>
+
+            {/* Backup & Secrets */}
+            <Section title="Backup & Secrets">
+              <KV label="Last Backup" value={a.lastBackup ? formatTime(a.lastBackup) : "Never"} warn={!a.backupHealthy} />
+              <KV label="Secrets" value={`${a.secrets.total} total, ${a.secrets.expiringSoon} expiring, ${a.secrets.expired} expired`} warn={a.secrets.expired > 0} />
+              <KV label="Last Rotation" value={a.secrets.lastRotation ? formatTime(a.secrets.lastRotation) : "Never"} />
+            </Section>
+
+            {/* Governance */}
+            <Section title="Governance">
+              <KV label="SLA Tier" value={a.slaTier} />
+              <KV label="Maintenance Window" value={a.maintenanceWindow} />
+              <KV label="Approved Models" value={a.approvedModels.join(", ") || "None"} mono />
+              <KV label="Auto-Restart" value={a.autoRestart ? "Enabled" : "Disabled"} />
+              {a.lastRestartReason && <KV label="Last Restart" value={a.lastRestartReason} />}
+            </Section>
+          </div>
+        </div>
+
+        {/* Timeline — full width */}
+        {a.timeline.length > 0 && (
           <Section title="Timeline">
             <div className="space-y-3">
               {a.timeline.map((e, i) => (
                 <div key={i} className="flex items-start gap-3">
                   <TimelineIcon type={e.type} />
                   <div>
-                    <div className="text-xs text-gray-300">{e.message}</div>
-                    <div className="text-[10px] text-gray-200 font-mono">{formatTime(e.time)}</div>
+                    <div className="text-sm text-gray-200">{e.message}</div>
+                    <div className="text-xs text-gray-400 font-mono">{formatTime(e.time)}</div>
                   </div>
                 </div>
               ))}
             </div>
           </Section>
-        </div>
+        )}
       </div>
+    </div>
+  );
+}
+
+function QuickStat({ label, value, sub, color }: { label: string; value: string; sub: string; color: string }) {
+  const colors: Record<string, string> = {
+    cyan: "text-cyan",
+    red: "text-red",
+    green: "text-green",
+    indigo: "text-indigo-400",
+  };
+  return (
+    <div className="glass rounded-xl p-4">
+      <div className="text-xs text-gray-400 mb-1">{label}</div>
+      <div className={`text-xl font-bold ${colors[color] || "text-white"}`}>{value}</div>
+      <div className="text-[10px] text-gray-500 mt-0.5">{sub}</div>
     </div>
   );
 }
@@ -158,17 +294,17 @@ export function AgentDetail({ agent: a, onClose }: { agent: Agent; onClose: () =
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h3 className="text-xs text-gray-300 uppercase tracking-wider mb-3 font-semibold">{title}</h3>
+      <h3 className="text-xs text-gray-400 uppercase tracking-wider mb-3 font-semibold">{title}</h3>
       <div className="glass rounded-xl p-4 space-y-2">{children}</div>
     </div>
   );
 }
 
-function KV({ label, value, warn, mono }: { label: string; value: string; warn?: boolean; mono?: boolean }) {
+function KV({ label, value, warn, mono, large }: { label: string; value: string; warn?: boolean; mono?: boolean; large?: boolean }) {
   return (
-    <div className="flex items-center justify-between text-sm">
-      <span className="text-gray-300 text-xs">{label}</span>
-      <span className={`text-xs ${warn ? "text-yellow" : "text-gray-300"} ${mono ? "font-mono" : ""}`}>
+    <div className="flex items-center justify-between">
+      <span className="text-sm text-gray-400">{label}</span>
+      <span className={`${large ? "text-sm font-medium" : "text-sm"} ${warn ? "text-yellow" : "text-gray-200"} ${mono ? "font-mono" : ""} text-right max-w-[60%] truncate`}>
         {value}
       </span>
     </div>
@@ -179,31 +315,26 @@ function ResourceBar({ label, value }: { label: string; value: number }) {
   const color = value > 80 ? "bg-red" : value > 60 ? "bg-yellow" : "bg-green";
   return (
     <div className="flex items-center gap-3">
-      <span className="text-xs text-gray-300 w-10">{label}</span>
-      <div className="flex-1 h-2 bg-surface-2 rounded-full overflow-hidden">
+      <span className="text-sm text-gray-400 w-10">{label}</span>
+      <div className="flex-1 h-2.5 bg-surface-2 rounded-full overflow-hidden">
         <div className={`h-full ${color} rounded-full transition-all`} style={{ width: `${value}%` }} />
       </div>
-      <span className="text-xs text-gray-200 font-mono w-10 text-right">{value}%</span>
+      <span className="text-sm text-gray-300 font-mono w-12 text-right">{value}%</span>
     </div>
   );
 }
 
-function StatusDot({ status }: { status: string }) {
+function StatusDot({ status, size }: { status: string; size?: "lg" }) {
   const c: Record<string, string> = { online: "bg-green", degraded: "bg-yellow", offline: "bg-red", stuck: "bg-orange" };
-  return <div className={`w-2.5 h-2.5 rounded-full ${c[status] || "bg-gray-500"}`} />;
+  const s = size === "lg" ? "w-4 h-4" : "w-2.5 h-2.5";
+  return <div className={`${s} rounded-full ${c[status] || "bg-gray-500"}`} />;
 }
 
 function TimelineIcon({ type }: { type: string }) {
   const icons: Record<string, string> = {
-    deploy: "🚀",
-    crash: "💥",
-    model_change: "🔄",
-    security: "🛡️",
-    config: "⚙️",
-    restart: "♻️",
-    alert: "🚨",
+    deploy: "🚀", crash: "💥", model_change: "🔄", security: "🛡️", config: "⚙️", restart: "♻️", alert: "🚨",
   };
-  return <span className="text-sm mt-0.5">{icons[type] || "·"}</span>;
+  return <span className="text-base mt-0.5">{icons[type] || "·"}</span>;
 }
 
 function formatTime(iso: string): string {
@@ -216,4 +347,10 @@ function formatTime(iso: string): string {
   if (hours < 24) return `${hours}h ago`;
   const days = Math.floor(hours / 24);
   return `${days}d ago`;
+}
+
+function formatNumber(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`;
+  return String(n);
 }

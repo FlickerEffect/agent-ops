@@ -20,7 +20,7 @@ export function AgentTable() {
     <>
       <div className="glass rounded-xl overflow-hidden">
         {/* Filters */}
-        <div className="flex items-center gap-4 p-4 border-b border-white/5">
+        <div className="flex flex-wrap items-center gap-3 p-4 border-b border-white/5">
           <span className="text-xs text-gray-300">Filter:</span>
           <select
             value={statusFilter}
@@ -46,71 +46,109 @@ export function AgentTable() {
           <div className="ml-auto text-xs text-gray-200">{filtered.length} agents</div>
         </div>
 
-        {/* Header */}
-        <div className="grid grid-cols-12 gap-2 px-4 py-2 text-[10px] text-gray-300 uppercase tracking-wider border-b border-white/5">
+        {/* Desktop table header — hidden on mobile */}
+        <div className="hidden lg:grid grid-cols-12 gap-2 px-4 py-2 text-[10px] text-gray-300 uppercase tracking-wider border-b border-white/5">
           <div className="col-span-1">Status</div>
           <div className="col-span-2">Agent</div>
+          <div className="col-span-1">Role</div>
           <div className="col-span-2">Current Task</div>
-          <div className="col-span-1 text-center">Queue</div>
           <div className="col-span-1 text-center">Err/24h</div>
-          <div className="col-span-1 text-center">Latency</div>
           <div className="col-span-1 text-center">Cost/Day</div>
-          <div className="col-span-1 text-center">Version</div>
-          <div className="col-span-1 text-center">Host / IP</div>
+          <div className="col-span-1 text-center">Model</div>
+          <div className="col-span-1 text-center">Host</div>
+          <div className="col-span-1 text-center">Channel</div>
           <div className="col-span-1 text-right">Last Seen</div>
         </div>
 
-        {/* Rows */}
-        {filtered.map((a) => (
-          <div
-            key={a.id}
-            onClick={() => setSelected(a)}
-            className="grid grid-cols-12 gap-2 px-4 py-3 border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors cursor-pointer"
-          >
-            <div className="col-span-1 flex items-center">
-              <StatusBadge status={a.status} />
-            </div>
-            <div className="col-span-2">
-              <div className="text-sm text-white font-medium truncate">{a.name}</div>
-              <div className="text-[10px] text-gray-200">
-                {a.environment} · {a.tags[0]}
+        {/* Desktop rows — hidden on mobile */}
+        <div className="hidden lg:block">
+          {filtered.map((a) => (
+            <div
+              key={a.id}
+              onClick={() => setSelected(a)}
+              className="grid grid-cols-12 gap-2 px-4 py-3 border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors cursor-pointer"
+            >
+              <div className="col-span-1 flex items-center">
+                <StatusBadge status={a.status} />
+              </div>
+              <div className="col-span-2">
+                <div className="text-sm text-white font-medium truncate">{a.name}</div>
+                <div className="text-[10px] text-gray-400">{a.owner}</div>
+              </div>
+              <div className="col-span-1 self-center">
+                <div className="text-[11px] text-gray-300 truncate">{a.role}</div>
+              </div>
+              <div className="col-span-2 text-xs text-gray-200 truncate self-center">
+                {a.currentTask || <span className="text-gray-500">Idle</span>}
+              </div>
+              <div className="col-span-1 text-center self-center">
+                <span className={`text-xs font-mono ${a.errors24h > 5 ? "text-red" : a.errors24h > 0 ? "text-yellow" : "text-gray-400"}`}>
+                  {a.errors24h}
+                </span>
+              </div>
+              <div className="col-span-1 text-center self-center text-xs font-mono text-cyan">
+                ${a.cost.today.toFixed(2)}
+              </div>
+              <div className="col-span-1 text-center self-center">
+                <span className="text-[10px] text-gray-300 font-mono truncate block">
+                  {a.cost.model.split("/").pop()}
+                </span>
+              </div>
+              <div className="col-span-1 text-center self-center">
+                <div className="text-[10px] text-gray-300 truncate">{a.host.name}</div>
+              </div>
+              <div className="col-span-1 text-center self-center">
+                <span className="text-[10px] text-gray-300">
+                  {a.channels?.[0]?.type || "—"}
+                </span>
+              </div>
+              <div className="col-span-1 text-right self-center text-[10px] text-gray-400 font-mono">
+                {timeAgo(a.lastSeen)}
               </div>
             </div>
-            <div className="col-span-2 text-xs text-gray-200 truncate self-center">
-              {a.currentTask || "—"}
-            </div>
-            <div className="col-span-1 text-center self-center">
-              <span className={`text-xs font-mono ${a.queueDepth > 3 ? "text-yellow" : "text-gray-200"}`}>
-                {a.queueDepth}
-              </span>
-            </div>
-            <div className="col-span-1 text-center self-center">
-              <span className={`text-xs font-mono ${a.errors24h > 5 ? "text-red" : a.errors24h > 0 ? "text-yellow" : "text-gray-300"}`}>
-                {a.errors24h}
-              </span>
-            </div>
-            <div className="col-span-1 text-center self-center text-xs font-mono text-gray-200">
-              {a.apiLatency > 0 ? `${a.apiLatency}ms` : "—"}
-            </div>
-            <div className="col-span-1 text-center self-center text-xs font-mono text-cyan">
-              ${a.cost.today.toFixed(2)}
-            </div>
-            <div className="col-span-1 text-center self-center">
-              {a.versionDrift ? (
-                <span className="text-[10px] px-1.5 py-0.5 bg-yellow/10 text-yellow rounded">drift</span>
-              ) : (
-                <span className="text-[10px] px-1.5 py-0.5 bg-green/10 text-green rounded">current</span>
+          ))}
+        </div>
+
+        {/* Mobile card layout */}
+        <div className="lg:hidden divide-y divide-white/5">
+          {filtered.map((a) => (
+            <div
+              key={a.id}
+              onClick={() => setSelected(a)}
+              className="p-4 hover:bg-white/[0.02] transition-colors cursor-pointer active:bg-white/[0.05]"
+            >
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <StatusDot status={a.status} />
+                  <div>
+                    <div className="text-base text-white font-semibold">{a.name}</div>
+                    <div className="text-xs text-gray-400">{a.role}</div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-mono text-cyan">${a.cost.today.toFixed(2)}/d</div>
+                  <div className="text-[10px] text-gray-400">{timeAgo(a.lastSeen)}</div>
+                </div>
+              </div>
+              {a.currentTask && (
+                <div className="text-xs text-gray-300 bg-white/5 rounded-lg px-3 py-1.5 mt-2 truncate">
+                  🔧 {a.currentTask}
+                </div>
               )}
+              <div className="flex items-center gap-3 mt-2 text-[10px] text-gray-400">
+                <span>{a.host.name}</span>
+                <span>·</span>
+                <span>{a.cost.model.split("/").pop()}</span>
+                {a.channels?.[0] && (
+                  <>
+                    <span>·</span>
+                    <span>{a.channels[0].type}</span>
+                  </>
+                )}
+              </div>
             </div>
-            <div className="col-span-1 text-center self-center">
-              <div className="text-[10px] text-gray-200 truncate">{a.host.name}</div>
-              <div className="text-[10px] text-gray-400 font-mono">{a.host.ip}</div>
-            </div>
-            <div className="col-span-1 text-right self-center text-[10px] text-gray-300 font-mono">
-              {timeAgo(a.lastSeen)}
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {selected && <AgentDetail agent={selected} onClose={() => setSelected(null)} />}
@@ -132,19 +170,9 @@ function StatusBadge({ status }: { status: AgentStatus }) {
   );
 }
 
-function HostMini({ cpu, ram }: { cpu: number; ram: number }) {
-  const cpuColor = cpu > 80 ? "bg-red" : cpu > 50 ? "bg-yellow" : "bg-green";
-  const ramColor = ram > 80 ? "bg-red" : ram > 50 ? "bg-yellow" : "bg-green";
-  return (
-    <div className="flex items-center gap-1">
-      <div className="w-8 h-1.5 bg-surface-2 rounded-full overflow-hidden" title={`CPU ${cpu}%`}>
-        <div className={`h-full ${cpuColor} rounded-full`} style={{ width: `${cpu}%` }} />
-      </div>
-      <div className="w-8 h-1.5 bg-surface-2 rounded-full overflow-hidden" title={`RAM ${ram}%`}>
-        <div className={`h-full ${ramColor} rounded-full`} style={{ width: `${ram}%` }} />
-      </div>
-    </div>
-  );
+function StatusDot({ status }: { status: string }) {
+  const c: Record<string, string> = { online: "bg-green", degraded: "bg-yellow", offline: "bg-red", stuck: "bg-orange" };
+  return <div className={`w-3 h-3 rounded-full ${c[status] || "bg-gray-500"}`} />;
 }
 
 function timeAgo(iso: string): string {
