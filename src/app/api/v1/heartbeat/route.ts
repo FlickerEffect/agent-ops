@@ -31,6 +31,7 @@ export async function POST(request: Request) {
       "session_count_today", "workspace_size",
       "side_projects", "abandoned_projects",
       "tailscale_status",
+      "workspace_files_content",
     ];
 
     for (const field of allowedFields) {

@@ -1,6 +1,7 @@
 "use client";
 
 import type { Agent } from "@/lib/types";
+import { FileViewer } from "./FileViewer";
 
 export function AgentDetail({ agent: a, onClose }: { agent: Agent; onClose: () => void }) {
   return (
@@ -103,12 +104,8 @@ export function AgentDetail({ agent: a, onClose }: { agent: Agent; onClose: () =
             <Section title="Memory & Workspace">
               <KV label="Memory Structure" value={a.memoryStructure} />
               {a.workspaceFiles && (
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {Object.entries(a.workspaceFiles).map(([file, exists]) => (
-                    <span key={file} className={`text-xs px-2 py-0.5 rounded-full ${exists ? "bg-green/10 text-green" : "bg-gray-700 text-gray-500"}`}>
-                      {file.toUpperCase()}.md
-                    </span>
-                  ))}
+                <div className="mt-3">
+                  <FileViewer agentId={a.id} files={a.workspaceFiles} />
                 </div>
               )}
             </Section>
