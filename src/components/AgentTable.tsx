@@ -14,6 +14,9 @@ export function AgentTable() {
     if (statusFilter !== "all" && a.status !== statusFilter) return false;
     if (envFilter !== "all" && a.environment !== envFilter) return false;
     return true;
+  }).sort((a, b) => {
+    if (a.versionDrift !== b.versionDrift) return a.versionDrift ? -1 : 1;
+    return new Date(b.lastSeen).getTime() - new Date(a.lastSeen).getTime();
   });
 
   return (
@@ -47,13 +50,14 @@ export function AgentTable() {
         </div>
 
         {/* Desktop table header — hidden on mobile */}
-        <div className="hidden lg:grid grid-cols-12 gap-2 px-4 py-2 text-[10px] text-gray-300 uppercase tracking-wider border-b border-white/5">
+        <div className="hidden lg:grid grid-cols-13 gap-2 px-4 py-2 text-[10px] text-gray-300 uppercase tracking-wider border-b border-white/5">
           <div className="col-span-1">Status</div>
           <div className="col-span-2">Agent</div>
           <div className="col-span-1">Role</div>
           <div className="col-span-2">Current Task</div>
           <div className="col-span-1 text-center">Err/24h</div>
           <div className="col-span-1 text-center">Cost/Day</div>
+          <div className="col-span-1 text-center">Version</div>
           <div className="col-span-1 text-center">Model</div>
           <div className="col-span-1 text-center">Host</div>
           <div className="col-span-1 text-center">Channel</div>
@@ -66,7 +70,7 @@ export function AgentTable() {
             <div
               key={a.id}
               onClick={() => setSelected(a)}
-              className="grid grid-cols-12 gap-2 px-4 py-3 border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors cursor-pointer"
+              className="grid grid-cols-13 gap-2 px-4 py-3 border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors cursor-pointer"
             >
               <div className="col-span-1 flex items-center">
                 <StatusBadge status={a.status} />
@@ -88,6 +92,9 @@ export function AgentTable() {
               </div>
               <div className="col-span-1 text-center self-center text-xs font-mono text-cyan">
                 ${a.cost.today.toFixed(2)}
+              </div>
+              <div className="col-span-1 text-center self-center">
+                <VersionBadge agentVersion={a.agentVersion} latestVersion={a.latestVersion} versionDrift={a.versionDrift} />
               </div>
               <div className="col-span-1 text-center self-center">
                 <span className="text-[10px] text-gray-300 font-mono truncate block">
@@ -135,8 +142,10 @@ export function AgentTable() {
                   🔧 {a.currentTask}
                 </div>
               )}
-              <div className="flex items-center gap-3 mt-2 text-[10px] text-gray-400">
+              <div className="flex items-center gap-2 mt-2 flex-wrap text-[10px] text-gray-400">
                 <span>{a.host.name}</span>
+                <span>·</span>
+                <VersionBadge agentVersion={a.agentVersion} latestVersion={a.latestVersion} versionDrift={a.versionDrift} compact />
                 <span>·</span>
                 <span>{a.cost.model.split("/").pop()}</span>
                 {a.channels?.[0] && (
@@ -173,6 +182,23 @@ function StatusBadge({ status }: { status: AgentStatus }) {
 function StatusDot({ status }: { status: string }) {
   const c: Record<string, string> = { online: "bg-green", degraded: "bg-yellow", offline: "bg-red", stuck: "bg-orange" };
   return <div className={`w-3 h-3 rounded-full ${c[status] || "bg-gray-500"}`} />;
+}
+
+function VersionBadge({ agentVersion, latestVersion, versionDrift, compact = false }: { agentVersion: string; latestVersion: string; versionDrift: boolean; compact?: boolean }) {
+  const unknown = agentVersion === "unknown" || agentVersion === "2026.4.x" || latestVersion === "Hermes";
+  const almostCurrent = versionDrift && !unknown && latestVersion.split(".").slice(0, 2).join(".") === agentVersion.split(".").slice(0, 2).join(".");
+  const cls = unknown
+    ? "bg-yellow/20 text-yellow"
+    : versionDrift
+      ? (almostCurrent ? "bg-yellow/20 text-yellow" : "bg-red/20 text-red")
+      : "bg-green/20 text-green";
+  const label = unknown ? "unknown" : versionDrift ? (almostCurrent ? "1 behind" : "outdated") : "current";
+  const title = `${agentVersion} → latest ${latestVersion}`;
+  return (
+    <span title={title} className={`inline-flex items-center rounded-full px-2 py-0.5 font-medium ${compact ? "text-[9px]" : "text-[10px]"} ${cls}`}>
+      {compact ? agentVersion : label}
+    </span>
+  );
 }
 
 function timeAgo(iso: string): string {

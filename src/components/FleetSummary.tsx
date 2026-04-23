@@ -5,9 +5,10 @@ export function FleetSummaryCards() {
   const s = getFleetSummary();
   const totalCostToday = agents.reduce((sum, a) => sum + a.cost.today, 0);
   const totalCostMonth = agents.reduce((sum, a) => sum + a.cost.month, 0);
+  const outdatedCount = agents.filter((a) => a.versionDrift).length;
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
       <SummaryCard label="Total Agents" value={s.total} color="text-white" />
       <SummaryCard
         label="Healthy"
@@ -24,6 +25,12 @@ export function FleetSummaryCards() {
         label="Offline"
         value={s.offline + s.stuck}
         color={s.offline + s.stuck > 0 ? "text-red" : "text-gray-300"}
+      />
+      <SummaryCard
+        label="Outdated"
+        value={outdatedCount}
+        color={outdatedCount > 0 ? "text-red" : "text-green"}
+        sub={outdatedCount > 0 ? "needs updates" : "all current"}
       />
       <SummaryCard
         label="Cost Today"
