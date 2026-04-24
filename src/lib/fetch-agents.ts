@@ -1,12 +1,12 @@
 import { getSupabaseAdmin } from "@/lib/db";
-import { agents as mockAgents } from "@/lib/mock-data";
 import type { Agent } from "@/lib/types";
 
 export async function fetchAgentsFromDB(): Promise<Agent[]> {
   try {
     const db = getSupabaseAdmin();
     const { data, error } = await db.from("agents").select("*").order("name");
-    if (error || !data || data.length === 0) return mockAgents;
+    if (error) throw error;
+    if (!data || data.length === 0) return [];
     return data.map((r) => ({
       id: r.id,
       name: r.name,
@@ -85,7 +85,8 @@ export async function fetchAgentsFromDB(): Promise<Agent[]> {
       peerAgents: r.peer_agents ?? [],
       timeline: [],
     })) as Agent[];
-  } catch {
-    return mockAgents;
+  } catch (e) {
+    console.error('[fetchAgentsFromDB] failed:', e);
+    return [];
   }
 }
