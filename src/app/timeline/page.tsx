@@ -1,5 +1,5 @@
 import { Sidebar } from "@/components/Sidebar";
-import { agents } from "@/lib/mock-data";
+import { fetchAgentsFromDB } from "@/lib/fetch-agents";
 import type { TimelineEvent } from "@/lib/types";
 
 interface FlatEvent extends TimelineEvent {
@@ -7,7 +7,8 @@ interface FlatEvent extends TimelineEvent {
   agentId: string;
 }
 
-export default function TimelinePage() {
+export default async function TimelinePage() {
+  const agents = await fetchAgentsFromDB();
   // Flatten all events across agents and sort by time descending
   const events: FlatEvent[] = agents
     .flatMap((a) =>

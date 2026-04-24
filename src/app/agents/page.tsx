@@ -1,7 +1,9 @@
 import { Sidebar } from "@/components/Sidebar";
 import { AgentTable } from "@/components/AgentTable";
+import { fetchAgentsFromDB } from "@/lib/fetch-agents";
 
-export default function AgentsPage() {
+export default async function AgentsPage() {
+  const agents = await fetchAgentsFromDB();
   return (
     <div className="flex min-h-screen">
       <Sidebar />
@@ -10,7 +12,7 @@ export default function AgentsPage() {
           <h1 className="text-2xl font-bold text-white">Agents</h1>
           <p className="text-sm text-gray-300 mt-1">All agents in the fleet</p>
         </header>
-        <AgentTable />
+        <AgentTable agents={agents} />
       </main>
     </div>
   );

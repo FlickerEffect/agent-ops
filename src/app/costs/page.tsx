@@ -1,7 +1,8 @@
 import { Sidebar } from "@/components/Sidebar";
-import { agents } from "@/lib/mock-data";
+import { fetchAgentsFromDB } from "@/lib/fetch-agents";
 
-export default function CostsPage() {
+export default async function CostsPage() {
+  const agents = await fetchAgentsFromDB();
   const totalToday = agents.reduce((s, a) => s + a.cost.today, 0);
   const totalWeek = agents.reduce((s, a) => s + a.cost.week, 0);
   const totalMonth = agents.reduce((s, a) => s + a.cost.month, 0);

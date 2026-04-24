@@ -1,7 +1,8 @@
 import { Sidebar } from "@/components/Sidebar";
-import { agents } from "@/lib/mock-data";
+import { fetchAgentsFromDB } from "@/lib/fetch-agents";
 
-export default function SecurityPage() {
+export default async function SecurityPage() {
+  const agents = await fetchAgentsFromDB();
   const issues = agents.filter(
     (a) =>
       !a.security.sshKeyOnly ||

@@ -2,8 +2,11 @@ import { FleetSummaryCards } from "@/components/FleetSummary";
 import { NeedsAttention } from "@/components/NeedsAttention";
 import { AgentTable } from "@/components/AgentTable";
 import { Sidebar } from "@/components/Sidebar";
+import { fetchAgentsFromDB } from "@/lib/fetch-agents";
 
-export default function Home() {
+export default async function Home() {
+  const agents = await fetchAgentsFromDB();
+
   return (
     <div className="flex min-h-screen">
       <Sidebar />
@@ -17,9 +20,9 @@ export default function Home() {
             Last refresh: just now
           </div>
         </header>
-        <FleetSummaryCards />
-        <NeedsAttention />
-        <AgentTable />
+        <FleetSummaryCards agents={agents} />
+        <NeedsAttention agents={agents} />
+        <AgentTable agents={agents} />
       </main>
     </div>
   );

@@ -1,10 +1,18 @@
-import { getFleetSummary } from "@/lib/mock-data";
-import { agents } from "@/lib/mock-data";
+import type { Agent, FleetSummary } from "@/lib/types";
 
-export function FleetSummaryCards() {
-  const s = getFleetSummary();
-  const totalCostToday = agents.reduce((sum, a) => sum + a.cost.today, 0);
-  const totalCostMonth = agents.reduce((sum, a) => sum + a.cost.month, 0);
+function computeFleetSummary(agents: Agent[]): FleetSummary {
+  const total = agents.length;
+  const online = agents.filter((a) => a.status === "online").length;
+  const degraded = agents.filter((a) => a.status === "degraded").length;
+  const offline = agents.filter((a) => a.status === "offline").length;
+  const stuck = agents.filter((a) => a.status === "stuck").length;
+  return { total, online, degraded, offline, stuck, healthyPct: total ? Math.round((online / total) * 100) : 0 };
+}
+
+export function FleetSummaryCards({ agents }: { agents: Agent[] }) {
+  const s = computeFleetSummary(agents);
+  const totalCostToday = agents.reduce((sum, a) => sum + (a.cost?.today ?? 0), 0);
+  const totalCostMonth = agents.reduce((sum, a) => sum + (a.cost?.month ?? 0), 0);
   const outdatedCount = agents.filter((a) => a.versionDrift).length;
 
   return (
