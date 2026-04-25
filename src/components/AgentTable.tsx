@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { agents } from "@/lib/mock-data";
 import type { Agent, AgentStatus, Environment } from "@/lib/types";
 import { AgentDetail } from "./AgentDetail";
 
-export function AgentTable() {
+export function AgentTable({ agents }: { agents: Agent[] }) {
   const [statusFilter, setStatusFilter] = useState<AgentStatus | "all">("all");
   const [envFilter, setEnvFilter] = useState<Environment | "all">("all");
   const [selected, setSelected] = useState<Agent | null>(null);

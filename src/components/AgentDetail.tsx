@@ -92,9 +92,9 @@ export function AgentDetail({ agent: a, onClose }: { agent: Agent; onClose: () =
             )}
 
             {/* Communication */}
-            {a.channels.length > 0 && (
+            {(a.channels || []).length > 0 && (
               <Section title="Communication">
-                {a.channels.map((ch, i) => (
+                {(a.channels || []).map((ch, i) => (
                   <KV key={i} label={ch.type} value={ch.handle || "configured"} />
                 ))}
               </Section>
@@ -217,7 +217,7 @@ export function AgentDetail({ agent: a, onClose }: { agent: Agent; onClose: () =
             {/* Permissions */}
             <Section title="Permissions">
               <div className="flex flex-wrap gap-1.5">
-                {a.permissions.map((p) => (
+                {(a.permissions || []).map((p) => (
                   <span key={p} className="text-xs px-2 py-0.5 bg-accent/10 text-accent rounded-full">{p}</span>
                 ))}
               </div>
@@ -226,7 +226,7 @@ export function AgentDetail({ agent: a, onClose }: { agent: Agent; onClose: () =
             {/* Security */}
             <Section title="Security">
               <KV label="Firewall" value={a.security.firewallStatus} warn={a.security.firewallStatus !== "active"} />
-              <KV label="Ports Exposed" value={a.security.portsExposed.join(", ") || "None"} mono />
+              <KV label="Ports Exposed" value={(a.security.portsExposed || []).join(", ") || "None"} mono />
               <KV label="SSH Key-Only" value={a.security.sshKeyOnly ? "Yes ✓" : "No ⚠"} warn={!a.security.sshKeyOnly} />
               <KV label="fail2ban" value={a.security.fail2ban ? "Active ✓" : "Inactive"} warn={!a.security.fail2ban} />
               <KV label="Critical Findings" value={String(a.security.criticalFindings)} warn={a.security.criticalFindings > 0} />
@@ -244,7 +244,7 @@ export function AgentDetail({ agent: a, onClose }: { agent: Agent; onClose: () =
             <Section title="Governance">
               <KV label="SLA Tier" value={a.slaTier} />
               <KV label="Maintenance Window" value={a.maintenanceWindow} />
-              <KV label="Approved Models" value={a.approvedModels.join(", ") || "None"} mono />
+              <KV label="Approved Models" value={(a.approvedModels || []).join(", ") || "None"} mono />
               <KV label="Auto-Restart" value={a.autoRestart ? "Enabled" : "Disabled"} />
               {a.lastRestartReason && <KV label="Last Restart" value={a.lastRestartReason} />}
             </Section>
@@ -252,10 +252,10 @@ export function AgentDetail({ agent: a, onClose }: { agent: Agent; onClose: () =
         </div>
 
         {/* Timeline — full width */}
-        {a.timeline.length > 0 && (
+        {(a.timeline || []).length > 0 && (
           <Section title="Timeline">
             <div className="space-y-3">
-              {a.timeline.map((e, i) => (
+              {(a.timeline || []).map((e, i) => (
                 <div key={i} className="flex items-start gap-3">
                   <TimelineIcon type={e.type} />
                   <div>

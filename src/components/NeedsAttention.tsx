@@ -1,7 +1,19 @@
-import { getNeedsAttention } from "@/lib/mock-data";
+import type { Agent } from "@/lib/types";
 
-export function NeedsAttention() {
-  const items = getNeedsAttention();
+function getNeedsAttention(agents: Agent[]): Agent[] {
+  return agents.filter((a) => {
+    if (a.status === "offline" || a.status === "stuck") return true;
+    if (a.status === "degraded") return true;
+    if (a.host?.disk > 80) return true;
+    if (a.security?.criticalFindings > 0) return true;
+    if (a.secrets?.expired > 0) return true;
+    if (a.errors24h > 10) return true;
+    return false;
+  });
+}
+
+export function NeedsAttention({ agents }: { agents: Agent[] }) {
+  const items = getNeedsAttention(agents);
   if (items.length === 0) return null;
 
   return (
@@ -37,15 +49,15 @@ export function NeedsAttention() {
   );
 }
 
-function getReasons(a: ReturnType<typeof getNeedsAttention>[0]): string[] {
+function getReasons(a: Agent): string[] {
   const reasons: string[] = [];
   if (a.status === "offline") reasons.push("Offline");
   if (a.status === "stuck") reasons.push("Stuck");
   if (a.status === "degraded") reasons.push("Degraded");
-  if (a.host.disk > 80) reasons.push(`Disk ${a.host.disk}%`);
+  if (a.host?.disk > 80) reasons.push(`Disk ${a.host.disk}%`);
   if (a.errors24h > 10) reasons.push(`${a.errors24h} errors/24h`);
-  if (a.secrets.expired > 0) reasons.push(`${a.secrets.expired} key(s) expired`);
-  if (a.security.criticalFindings > 0) reasons.push(`${a.security.criticalFindings} critical vuln(s)`);
+  if (a.secrets?.expired > 0) reasons.push(`${a.secrets.expired} key(s) expired`);
+  if (a.security?.criticalFindings > 0) reasons.push(`${a.security.criticalFindings} critical vuln(s)`);
   return reasons;
 }
 

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { authenticateAgent } from "@/lib/auth-tokens";
 import { getSupabaseAdmin } from "@/lib/db";
 
-// POST /api/v1/heartbeat — agent pushes its status
+// POST /api/v1/heartbeat — agent pushes its status + work state
 export async function POST(request: Request) {
   const auth = await authenticateAgent(request);
   if (!auth) {
@@ -14,15 +14,14 @@ export async function POST(request: Request) {
     const db = getSupabaseAdmin();
     const now = new Date().toISOString();
 
-    // Update the agent's status fields
     const update: Record<string, unknown> = {
       last_heartbeat: now,
       last_seen: now,
       updated_at: now,
     };
 
-    // Allow agent to push specific fields
-    const allowedFields = [
+    // System metrics
+    const metricFields = [
       "status", "current_task", "queue_depth", "uptime",
       "host_cpu", "host_ram", "host_disk", "host_network",
       "errors_1h", "errors_24h", "api_latency",
@@ -31,14 +30,18 @@ export async function POST(request: Request) {
       "session_count_today", "workspace_size",
       "side_projects", "abandoned_projects",
       "tailscale_status",
-      "workspace_files_content",
     ];
 
-    for (const field of allowedFields) {
+    for (const field of metricFields) {
       if (body[field] !== undefined) {
         update[field] = body[field];
       }
     }
+
+    // Coordination fields
+    if (body.work_state !== undefined) update.work_state = body.work_state;
+    if (body.capabilities !== undefined) update.capabilities = body.capabilities;
+    if (body.available_for !== undefined) update.available_for = body.available_for;
 
     const { error } = await db
       .from("agents")
@@ -47,7 +50,7 @@ export async function POST(request: Request) {
 
     if (error) throw error;
 
-    // Also log a heartbeat event (sparse — only every 6th heartbeat to avoid noise)
+    // Log heartbeat event (sparse)
     const { count } = await db
       .from("events")
       .select("*", { count: "exact", head: true })
@@ -56,10 +59,11 @@ export async function POST(request: Request) {
       .gte("created_at", new Date(Date.now() - 3600000).toISOString());
 
     if ((count || 0) < 1) {
+      const task = body.work_state?.task || body.current_task || "idle";
       await db.from("events").insert({
         agent_id: auth.agentId,
         type: "heartbeat",
-        message: `Heartbeat: ${body.status || "online"}, task: ${body.current_task || "idle"}`,
+        message: `Heartbeat: ${body.status || "online"}, working on: ${task}`,
       });
     }
 

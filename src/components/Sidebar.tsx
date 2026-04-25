@@ -45,6 +45,7 @@ export function Sidebar() {
 
         <nav className="flex-1 p-3 space-y-1">
           <SidebarLink href="/" icon="📊" label="Dashboard" active={pathname === "/"} onClick={() => setOpen(false)} />
+          <SidebarLink href="/coordination" icon="🎯" label="Coordination" active={pathname === "/coordination"} onClick={() => setOpen(false)} />
           <SidebarLink href="/agents" icon="🤖" label="Agents" active={pathname === "/agents"} onClick={() => setOpen(false)} />
           <SidebarLink href="/security" icon="🛡️" label="Security" active={pathname === "/security"} onClick={() => setOpen(false)} />
           <SidebarLink href="/costs" icon="💰" label="Costs" active={pathname === "/costs"} onClick={() => setOpen(false)} />
