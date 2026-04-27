@@ -27,7 +27,7 @@ export async function POST(request: Request) {
       "errors_1h", "errors_24h", "api_latency",
       "cost_today", "cost_week", "cost_month", "tokens_today",
       "agent_version", "system_version",
-      "session_count_today", "workspace_size",
+      "session_count_today", "workspace_size", "security",
       "side_projects", "abandoned_projects",
       "tailscale_status",
     ];
