@@ -50,7 +50,7 @@ export function Sidebar() {
           <SidebarLink href="/security" icon="🛡️" label="Security" active={pathname === "/security"} onClick={() => setOpen(false)} />
           <SidebarLink href="/costs" icon="💰" label="Costs" active={pathname === "/costs"} onClick={() => setOpen(false)} />
           <SidebarLink href="/timeline" icon="📜" label="Timeline" active={pathname === "/timeline"} onClick={() => setOpen(false)} />
-          <SidebarLink href="/settings" icon="⚙️" label="Settings" active={pathname === "/settings"} onClick={() => setOpen(false)} />
+
         </nav>
 
         <div className="p-4 border-t border-white/5 space-y-3">
